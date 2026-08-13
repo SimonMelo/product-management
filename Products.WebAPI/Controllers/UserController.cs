@@ -13,6 +13,7 @@ namespace Products.WebAPI.Controllers;
 public class UserController(ISender mediator) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand request, CancellationToken ct)
     {
         var result = await mediator.Send(request, ct);
