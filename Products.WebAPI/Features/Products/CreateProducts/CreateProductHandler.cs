@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Products.WebAPI.Common.Enums;
 using Products.WebAPI.Common.Interfaces;
 using Products.WebAPI.Common.Results;
 using Products.WebAPI.Infrastructure.Persistence;
@@ -40,11 +41,24 @@ public class CreateProductHandler(AppDbContext db, ICurrentUserService currentUs
             CreatedAt = DateTime.UtcNow
         };
         
+        var movement = new Common.Entities.StockMovement
+        {
+            ProductBarcode = request.Barcode,
+            Quantity = request.Quantity,
+            Type = EMovementType.Ajuste,
+            UserId = currentUserService.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
         db.Products.Add(product);
+        
+        await db.SaveChangesAsync(cancellationToken);
+        
+        db.StockMovements.Add(movement);
 
         await db.SaveChangesAsync(cancellationToken);
         
-        return Result<ProductResponse>.Ok(new ProductResponse(request.Barcode, request.Name, brand.Name, category.Name));
+        return Result<ProductResponse>.Ok(new ProductResponse(request.Barcode, request.Name, brand.Name, category.Name, request.Quantity));
     }
     
 }
